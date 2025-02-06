@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+      
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    ports:
+      - "8081:8081"  # Port d'accès à l'interface web
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+       
+    depends_on:
+      - mongo
+
+  app:
+    build: .
+    container_name: node-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://admin:admin123@mongo:27017/mydb  # Ajout de l'utilisateur et mot de passe dans l'URI
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: ["node", "app.js"]
+
+volumes:
+  mongo_data:
